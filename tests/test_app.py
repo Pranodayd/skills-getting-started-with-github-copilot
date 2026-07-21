@@ -21,6 +21,20 @@ def test_duplicate_signup_is_rejected():
     assert response.json()["detail"] == "Student already signed up for this activity"
 
 
+def test_unregister_participant_removes_the_email():
+    client.post("/activities/Chess Club/signup?email=remove-me@mergington.edu")
+
+    response = client.delete(
+        "/activities/Chess Club/participants?email=remove-me@mergington.edu"
+    )
+
+    assert response.status_code == 200
+    assert response.json()["message"] == "Removed remove-me@mergington.edu from Chess Club"
+
+    activity = client.get("/activities").json()["Chess Club"]
+    assert "remove-me@mergington.edu" not in activity["participants"]
+
+
 def test_main_starts_uvicorn():
     with patch("src.app.uvicorn.run") as mock_run:
         main()
